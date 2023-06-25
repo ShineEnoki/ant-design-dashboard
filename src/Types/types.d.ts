@@ -6,3 +6,13 @@ export interface ResponseType {
   carts?: object[];
   comments?: object[];
 }
+
+export interface DataTypeForProducts{
+  discountPercentage: number;
+  discountedPrice: number;
+  id: number; 
+  price: number;
+  quantity: number;
+  title: string;
+  total: number;
+}
