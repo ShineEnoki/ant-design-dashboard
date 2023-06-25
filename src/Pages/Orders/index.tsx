@@ -1,17 +1,38 @@
-import useDataFetch from "../../customHooks/useFetchData";
-import { Avatar, Rate, Space, Table, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { Space, Table, Typography } from "antd";
+import axios from "axios";
+import { DataTypeForProducts } from "../../Types/types";
+//this page don't use custom hook for data fetching
 
-interface DataTypeForInventory {
-  id: number;
-}
 
 const Orders = () => {
-  const { data, isLoading } = useDataFetch(
-    "https://dummyjson.com/carts/1"
-  );
+  const [data, setData] = useState<DataTypeForProducts[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const dataToShow: DataTypeForInventory[] =
-    data && data.products ? (data.products as DataTypeForInventory[]) : [];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("https://dummyjson.com/carts/1");
+        const fetchedData: DataTypeForProducts[] = response.data.products;
+        setData(fetchedData);
+      } catch (error: unknown) {
+        setError(error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <Space size={20} direction="vertical" style={{ width: '100%'}}>
@@ -19,19 +40,12 @@ const Orders = () => {
       <Table
         columns={[
           {
-            title: "Thumbnail",
-            dataIndex: "thumbnail",
-            render: (link) => <Avatar src={link} size='large' />
-          },
-          {
             title: "Title",
             dataIndex: "title",
           },
-          
           {
-            title: "Rating",
-            dataIndex: "rating",
-            render: (value) => <Rate value={value} allowHalf disabled />
+            title: "Quantity",
+            dataIndex: "quantity",
           },
           {
             title: "Price",
@@ -50,7 +64,7 @@ const Orders = () => {
             render: (value) => <span> $ {value}</span>
           },
         ]}
-        dataSource={dataToShow.map((item) => ({ ...item, key: item.id }))}
+        dataSource={data.map((item) => ({ ...item, key: item.id }))}
         pagination={{
           pageSize: 7,
         }}
